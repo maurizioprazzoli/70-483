@@ -9,23 +9,14 @@ namespace MultiThread
 {
     class Program
     {
-        private static void testFunctionInForegroundThread()
+        private static void testFunctionNonParamVoidReturn()
         {
-            for (Int32 i = 0; i < 100000; i++)
+            for (Int32 i = 0; i < 100; i++)
             {
                 Console.WriteLine("Line number: {0}", i);
             }
         }
-
-        private static void testFunctionInBackgroungThread()
-        {
-            for (Int32 i = 0; i < 100000; i++)
-            {
-                Console.WriteLine("Line number: {0}", i);
-            }
-        }
-
-        private static void testFunctionInForegroundThreadWithParam(object par1)
+        private static void testFunctionObjParamVoidReturn(object par1)
         {
             for (Int32 i = 0; i < (Int32)par1; i++)
             {
@@ -35,13 +26,13 @@ namespace MultiThread
 
         static void Main(string[] args)
         {
-            Int32 useCase = 4;
+            Int32 useCase = 5;
 
             // Use foregroung thread.
-            // Application can complete until all foreground thread has terminate
+            // Application can NON terminate until all foreground thread has terminate
             if (useCase == 1)
             {
-                Thread t = new Thread(testFunctionInForegroundThread);
+                Thread t = new Thread(testFunctionNonParamVoidReturn);
                 t.IsBackground = false;
                 t.Start();
                 for (Int32 i = 0; i < 10; i++)
@@ -51,10 +42,10 @@ namespace MultiThread
             }
 
             // Use background thread.
-            // Application can complete until all foreground thread has terminate
+            // Application CAN terminate even if some foreground thread hasn't terminate
             if (useCase == 2)
             {
-                Thread t = new Thread(testFunctionInBackgroungThread);
+                Thread t = new Thread(testFunctionNonParamVoidReturn);
                 t.IsBackground = true;
                 t.Start();
                 for (Int32 i = 0; i < 10; i++)
@@ -65,29 +56,28 @@ namespace MultiThread
 
             // Use foreground thread.
             // Pass argument to thread
-            // Application can complete until all foreground thread has terminate
             if (useCase == 3)
             {
-
-                Thread t = new Thread(testFunctionInForegroundThreadWithParam);
+                Int32 threadParameter = 4;
+                Thread t = new Thread(testFunctionObjParamVoidReturn);
                 t.IsBackground = false;
-                t.Start(4);
+                t.Start(threadParameter);
             }
 
             // Use foreground thread.
-            // Pass argument to thread
-            // Application can complete until all foreground thread has terminate
+            // Share local variable with thread
             if (useCase == 4)
             {
                 var exitFormThread = false;
-                Thread t = new Thread(() => {
-                                                while(!exitFormThread)
-                                                {
-                                                    Console.WriteLine("Running ...");
-                                                    Thread.Sleep(1000);
-                                                }
-                                                
-                                            });
+                Thread t = new Thread(() =>
+                {
+                    while (!exitFormThread)
+                    {
+                        Console.WriteLine("Running ...");
+                        Thread.Sleep(1000);
+                    }
+
+                });
                 t.IsBackground = false;
                 t.Start();
                 Console.WriteLine("Press any key to exit.");
@@ -96,6 +86,35 @@ namespace MultiThread
 
             }
 
+
+            if (useCase == 5)
+            {
+                Task t = Task.Run(action: testFunctionNonParamVoidReturn);
+                t.Wait();
+                
+                Action a = testFunctionNonParamVoidReturn;
+                Task t1 = Task.Run(a);
+                t1.Wait();
+
+                var r = Task.Run(() =>
+                                   {
+                                       return 42;
+                                   });
+
+                Console.WriteLine(r);
+
+                var r1 = Task<Int32>.Run(() =>
+                {
+                    return 42;
+                }).ContinueWith((arg) =>
+                                 {
+                                     Int32 res = arg.Result;
+                                     return res * 2;
+                                 });
+
+                Console.WriteLine(r1.Result);
+                Console.ReadLine();
+            }
         }
     }
 }
