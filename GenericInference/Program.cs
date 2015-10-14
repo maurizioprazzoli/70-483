@@ -31,8 +31,8 @@ namespace GenericInference
         }
 
         public void test1<TCurr, TNext>(ChainCommand<TCurr, TNext> arg)
-            where TCurr : ICommand
-            where TNext : ICommand
+            where TCurr : IChainableCommand, ICommand
+            where TNext : IChainableCommand, ICommand
         {
             test1(arg.currentCommand);
             test1(arg.nextCommand);
@@ -42,9 +42,9 @@ namespace GenericInference
         { }
     }
 
-    public class ChainCommand<TCurr, TNext> : IChainCommand<ICommand, ICommand>
-        where TCurr : ICommand
-        where TNext : ICommand
+    public class ChainCommand<TCurr, TNext> : IChainCommand<IChainableCommand, IChainableCommand>, IChainableCommand
+        where TCurr : IChainableCommand
+        where TNext : IChainableCommand
     {
         public TNext nextCommand;
         public TCurr currentCommand;
@@ -54,18 +54,22 @@ namespace GenericInference
             this.nextCommand = nextCommand;
         }
 
-
+        void ICommand.Do()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public interface ICommand { void Do(); }
-    public interface IChainCommand<TCurr, TNext> { }
+    public interface IChainCommand<TCurr, TNext> : IChainableCommand { }
+    public interface IChainableCommand : ICommand { }
 
-    public class SampleCommand : ICommand
+    public class SampleCommand : ICommand, IChainableCommand
     {
         public void Do() { Console.WriteLine( "SampleCommand"); }
     }
 
-    public class SampleCommand1 : ICommand
+    public class SampleCommand1 : ICommand, IChainableCommand
     {
         public void Do() { Console.WriteLine( "SampleCommand1"); }
     }
@@ -73,8 +77,8 @@ namespace GenericInference
     public static class CommandExtension
     {
         public static ChainCommand<TCurrent, TNext> ConcatCommand<TCurrent, TNext>(this TCurrent currentCommand, TNext nextCommand)
-            where TCurrent : ICommand
-            where TNext : ICommand
+            where TCurrent : IChainableCommand
+            where TNext : IChainableCommand
         {
             return new ChainCommand<TCurrent, TNext>(currentCommand, nextCommand);
         }
@@ -104,15 +108,20 @@ namespace GenericInference
             var command1 = new SampleCommand();
             var command2 = new SampleCommand1();
             var command3 = new SampleCommand()
+                                  .ConcatCommand(new SampleCommand1());
+
+            var command4 = new SampleCommand()
                                     .ConcatCommand(
-                                                    new SampleCommand1()
-                                                    .ConcatCommand(new SampleCommand());
+                                                    new SampleCommand1().ConcatCommand(new SampleCommand())
+                                                    );
             var c3 = new Class3();
 
             c3.test1(command1);
             c3.test1(command2);
             c3.test1(command3);
+            c3.test1(command4);
 
         }
     }
 }
+
