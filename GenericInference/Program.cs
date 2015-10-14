@@ -20,25 +20,98 @@ namespace GenericInference
 
     public class Class3
     {
-        public void test1<T>(T arg) where T : Interface0
-        { }
+        public void test1<TCurr, TNext>(IChainCommand<TCurr, TNext> arg)
+        {
 
-        public void test1(Interface1 arg)
+        }
+
+        public void test1<T>(T arg) where T : ICommand
+        {
+            arg.Do();
+        }
+
+        public void test1<TCurr, TNext>(ChainCommand<TCurr, TNext> arg)
+            where TCurr : ICommand
+            where TNext : ICommand
+        {
+            test1(arg.currentCommand);
+            test1(arg.nextCommand);
+        }
+
+        public void test1(Class1 arg)
         { }
     }
+
+    public class ChainCommand<TCurr, TNext> : IChainCommand<ICommand, ICommand>
+        where TCurr : ICommand
+        where TNext : ICommand
+    {
+        public TNext nextCommand;
+        public TCurr currentCommand;
+        public ChainCommand(TCurr currentCommand, TNext nextCommand)
+        {
+            this.currentCommand = currentCommand;
+            this.nextCommand = nextCommand;
+        }
+
+
+    }
+
+    public interface ICommand { void Do(); }
+    public interface IChainCommand<TCurr, TNext> { }
+
+    public class SampleCommand : ICommand
+    {
+        public void Do() { Console.WriteLine( "SampleCommand"); }
+    }
+
+    public class SampleCommand1 : ICommand
+    {
+        public void Do() { Console.WriteLine( "SampleCommand1"); }
+    }
+
+    public static class CommandExtension
+    {
+        public static ChainCommand<TCurrent, TNext> ConcatCommand<TCurrent, TNext>(this TCurrent currentCommand, TNext nextCommand)
+            where TCurrent : ICommand
+            where TNext : ICommand
+        {
+            return new ChainCommand<TCurrent, TNext>(currentCommand, nextCommand);
+        }
+    }
+
+
 
     class Program
     {
 
         static void Main(string[] args)
         {
-            Interface0 c0 = new Class0();
-            Interface1 c1 = new Class1();
+            //var c0 = new Class0();
+            //var c1 = new Class1();
 
+            //var c3 = new Class3();
+
+            ////c3.test1(c0);
+            //c3.test1(c1);
+
+            ////Command comm = new Command();
+            ////Command<string> comm1 = new Command<String>();
+
+            ////c3.test1(comm);
+            ////c3.test1(comm1);
+
+            var command1 = new SampleCommand();
+            var command2 = new SampleCommand1();
+            var command3 = new SampleCommand()
+                                    .ConcatCommand(
+                                                    new SampleCommand1()
+                                                    .ConcatCommand(new SampleCommand());
             var c3 = new Class3();
 
-            c3.test1(c0);
-            c3.test1(c1);
+            c3.test1(command1);
+            c3.test1(command2);
+            c3.test1(command3);
 
         }
     }
