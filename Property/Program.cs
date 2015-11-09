@@ -25,6 +25,8 @@ namespace Property
 
             public Int32 aip { get; set; }
 
+            public Int32 NotSetProperty { get{return 0;} }
+
             
 
             public virtual Int32 test

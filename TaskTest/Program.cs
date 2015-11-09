@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Enum
+namespace TaskTest
 {
-    class EnumTest : System.ValueType
+    class Program
     {
-
-        Int32 test;
+        static void Main(string[] args)
+        {
+        }
     }
 }
