@@ -11,9 +11,23 @@ namespace Async
     {
         static void Main(string[] args)
         {
-            Int32 a = t estm();
-
+            Console.WriteLine(0.ToString("###0"));
+            Console.WriteLine(10.ToString("###0"));
+            Console.WriteLine(999.ToString("###0"));
+            Console.WriteLine(99999.ToString("###0"));
         }
+
+        //The method must meet the following requirements:
+        //Return a string that includes the player name and the number of coins.
+        //Display the number of coins without leading zeros if the number is 1 or greater.
+        //Display the number of coins as a single 0 if the number is 0.
+        //You need to ensure that the method meets the requirements.
+        //Which code segment should you insert at line 03?
+        public string FormatCoins(string name, int coins)
+        {
+            return "";
+        }
+
 
         private static int testm()
         {
